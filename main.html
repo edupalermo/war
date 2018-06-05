@@ -1,0 +1,189 @@
+<html>
+
+<head>
+	<script type="text/javascript" src="battle.js"></script>
+	<script type="text/javascript" src="warrior.js"></script>
+	<script type="text/javascript" src="util.js"></script>
+</head>
+
+<script>
+
+function onLoad() {
+	var c = document.getElementById("battleCanvas");
+	var ctx = c.getContext("2d");
+	
+	
+	var hiddenCanvas = document.createElement('Canvas');
+	hiddenCanvas.width = c.width;
+	hiddenCanvas.height = c.height;
+	var doubleBufferContext = hiddenCanvas.getContext('2d');
+
+	var battle = generateInitialWarriors();
+	battle.draw(doubleBufferContext);
+	ctx.drawImage(hiddenCanvas, 0, 0);
+
+	setInterval(step, 50, ctx, battle, hiddenCanvas);
+	
+}
+
+
+function createLayers() {
+
+
+}
+
+function test(){
+	var hiddenCanvas = document.createElement('Canvas');
+	hiddenCanvas.width = 200;
+	hiddenCanvas.height = 200;
+	var doubleBufferContext = hiddenCanvas.getContext('2d');
+	
+	doubleBufferContext.font = "30px Arial";
+	doubleBufferContext.fillText("Hello World",10,50);
+	
+	
+	var c = document.getElementById("testCanvas");
+	var ctx = c.getContext("2d");
+	ctx.drawImage(hiddenCanvas, 0, 0);
+
+	doubleBufferContext.clearRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+
+	doubleBufferContext.fillStyle = "red";
+	doubleBufferContext.font = "30px Arial";
+	doubleBufferContext.fillText("Chatuba",10,50);
+
+	ctx.drawImage(hiddenCanvas, 0, 0);
+
+}
+
+
+
+function step(ctx, battle, hiddenCanvas) {
+	var doubleBufferContext = hiddenCanvas.getContext('2d');
+
+	//doubleBufferContext.clearRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+
+	doubleBufferContext.beginPath();
+	doubleBufferContext.rect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+	doubleBufferContext.fillStyle = "white";
+	doubleBufferContext.fill();
+	doubleBufferContext.stroke();
+
+	battle.movePieces();
+	battle.draw(doubleBufferContext);	
+	
+	ctx.drawImage(hiddenCanvas, 0, 0);
+}
+
+function hasFinished() {
+	return true;
+}
+
+function generateInitialWarriors() {
+	
+	var battle = new Battle();
+
+	for (var team = 0; team < 2; team++) {
+		//for (var i = 0; i < (team === 9 || team === 8 ? 400 : 75); i++) {
+		for (var i = 0; i < 500; i++) {
+			battle.addWarrior(team, new Warrior(random(0, 1000), random(0, 600)));
+		}
+	}
+	
+	return battle;
+
+}
+
+
+function calcDistance(w1, w2) {
+	return Math.sqrt(Math.pow(w2.x - w1.x, 2) + Math.pow(w2.y - w1.y, 2));
+}
+
+function calcDistanceFromPoints(x1, y1, x2, y2) {
+	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
+function getNearest(battle, team, warrior) {
+	var nearest = undefined;
+	for (var t = 0; t < battle.team.length; t++) {
+		if (t !== team) {
+			for (var i = 0; i < battle.team[t].length; i++) {
+				if (battle.team[t][i].isAlive()) {
+					if ((!nearest) || (calcDistance(warrior, battle.team[t][i]) < calcDistance(warrior, nearest))) {
+						nearest = battle.team[t][i];
+					}
+				}
+			}			
+		}
+	}
+	return nearest;
+}
+
+function getOverlap(battle, team, warrior, radius) {
+	var nearest = undefined;
+	for (var t = 0; t < battle.team.length; t++) {
+		if (t === team) {
+			for (var i = 0; i < battle.team[t].length; i++) {
+				if ((battle.team[t][i].isAlive()) && (battle.team[t][i] != warrior)) {
+					var itDistance = calcDistance(warrior, battle.team[t][i]);
+					if (itDistance <= radius * 2) {
+						if ((!nearest) || (itDistance < calcDistance(warrior, nearest))) {
+							nearest = battle.team[t][i];
+						}
+					}
+				}
+			}			
+		}
+	}
+	return nearest;
+}
+
+function getMaxHealthFromTeam(battle, team) {
+	var total = 0;
+	
+	for (var i = 0; i < battle.team[team].length; i++) {
+		total = total + battle.team[team][i].maxHealth;
+	}
+	
+	return total;
+}
+
+function getHealthFromTeam(battle, team) {
+	var total = 0;
+	
+	for (var i = 0; i < battle.team[team].length; i++) {
+		total = total + battle.team[team][i].health;
+	}
+	
+	return total;
+}
+
+function random(min, max) {
+	return Math.floor((Math.random() * (max - min + 1)) + min);
+}
+
+function getTimemills() {
+	var d = new Date();
+	return d.getTime();
+}
+
+function getTeamColor(team) {
+	var colors = ["red", "green", "blue", "brown", "cyan", "indigo", "lightpink", "lightslategrey", "orange", "seagreen"];
+	//var colors = ["yellow", "white", "blue", "brown", "cyan", "indigo", "lightpink", "lightslategrey", "orange", "seagreen"];
+	return colors[team];
+}
+
+</script>
+
+
+
+
+<body onload="onLoad()">
+
+<canvas id="battleCanvas" width="1000" height="600" style="border:1px solid #000000;">
+</canvas>
+
+
+</body>
+
+</html>
