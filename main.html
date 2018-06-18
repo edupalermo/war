@@ -2,8 +2,10 @@
 
 <head>
 	<script type="text/javascript" src="battle.js"></script>
-	<script type="text/javascript" src="warrior.js"></script>
 	<script type="text/javascript" src="util.js"></script>
+	<script type="text/javascript" src="warrior.js"></script>
+	<script type="text/javascript" src="archer.js"></script>
+	<script type="text/javascript" src="arrow.js"></script>
 </head>
 
 <script>
@@ -12,13 +14,13 @@ function onLoad() {
 	var c = document.getElementById("battleCanvas");
 	var ctx = c.getContext("2d");
 	
-	
 	var hiddenCanvas = document.createElement('Canvas');
 	hiddenCanvas.width = c.width;
 	hiddenCanvas.height = c.height;
 	var doubleBufferContext = hiddenCanvas.getContext('2d');
 
-	var battle = generateInitialWarriors();
+	var battle = generateInitialWarriors(1000, 600);
+	battle.setCanvasSize(1000, 600);
 	battle.draw(doubleBufferContext);
 	ctx.drawImage(hiddenCanvas, 0, 0);
 
@@ -26,11 +28,6 @@ function onLoad() {
 	
 }
 
-
-function createLayers() {
-
-
-}
 
 function test(){
 	var hiddenCanvas = document.createElement('Canvas');
@@ -79,14 +76,17 @@ function hasFinished() {
 	return true;
 }
 
-function generateInitialWarriors() {
+function generateInitialWarriors(width, height) {
 	
 	var battle = new Battle();
 
 	for (var team = 0; team < 2; team++) {
 		//for (var i = 0; i < (team === 9 || team === 8 ? 400 : 75); i++) {
 		for (var i = 0; i < 500; i++) {
-			battle.addWarrior(team, new Warrior(random(0, 1000), random(0, 600)));
+			battle.addWarrior(team, new Warrior(random(0, width), random(0, height)));
+		}
+		for (var i = 0; i < 10; i++) {
+			battle.addWarrior(team, new Archer(random(0, width), random(0, height)));
 		}
 	}
 	
@@ -162,10 +162,6 @@ function random(min, max) {
 	return Math.floor((Math.random() * (max - min + 1)) + min);
 }
 
-function getTimemills() {
-	var d = new Date();
-	return d.getTime();
-}
 
 function getTeamColor(team) {
 	var colors = ["red", "green", "blue", "brown", "cyan", "indigo", "lightpink", "lightslategrey", "orange", "seagreen"];
